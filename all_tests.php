@@ -1,5 +1,9 @@
 <?php
-$time = strtotime('-1 day');
+if (file_exists(dirname(__FILE__) . '/test_time.php')) {
+	require dirname(__FILE__) . '/test_time.php';
+} else {
+	$time = time();
+}
 ?>
 <!DOCTYPE html>
 <html lang="ja">
