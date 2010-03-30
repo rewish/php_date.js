@@ -63,10 +63,10 @@ tr.Failed td {
 <table>
 	<thead>
 		<tr>
-			<th>テスト内容</th>
-			<th>JS結果</th>
-			<th>PHP結果</th>
-			<th>比較</th>
+			<th>Case</th>
+			<th>JavaScript</th>
+			<th>PHP</th>
+			<th>Compare</th>
 		</tr>
 	</thead>
 	<tbody>
