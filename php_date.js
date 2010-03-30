@@ -166,6 +166,14 @@ var parsePattern = [
  * @private
  */
 var isOpera = typeof window.opera !== 'undefined';
+/**
+ * zero padding
+ * @private
+ */
+function zp(v, dig) {
+	dig = dig || 2;
+	return (new Array(dig + 1).join('0') + v).slice(-dig);
+}
 
 /**
  * Date.parse及び定数で扱えるフォーマットをパースしてUTCベースのUNIXタイムスタンプを返す
@@ -369,11 +377,8 @@ Date.prototype.getHalfHours = function(hour) {
  */
 Date.prototype.getGMTDiff = function(colon) {
 	var offset = this.getTimezoneOffset() / 60;
-	return [
-		offset > 0 ? '-' : '+',
-		('0' + Math.abs(offset)).slice(-2),
-		colon ? ':' : '', '00'
-	].join('');
+	colon = colon ? ':' : '';
+	return [offset > 0 ? '-' : '+', zp(Math.abs(offset)), colon, '00'].join('');
 };
 
 /**
@@ -411,7 +416,7 @@ function toFormatDate(format) {
 		}
 		result[i]
 			// [Day] 01 to 31
-			= str === 'd' ? ('0' + this.getDate()).slice(-2)
+			= str === 'd' ? zp(this.getDate())
 			// [Day] Mon through Sun
 			: str === 'D' ? dayShortNames[this.getDay()]
 			// [Day] 1 to 31
@@ -428,12 +433,12 @@ function toFormatDate(format) {
 			: str === 'z' ? this.getElapseDays()
 
 			// [Week] Example: 42 (the 42nd week in the year)
-			: str === 'W' ? ('0' + this.getISOWeekNumber()).slice(-2)
+			: str === 'W' ? zp(this.getISOWeekNumber())
 
 			// [Month] January through December
 			: str === 'F' ? monthFullNames[this.getMonth()]
 			// [Month] 01 through 12
-			: str === 'm' ? ('0' + (this.getMonth() + 1)).slice(-2)
+			: str === 'm' ? zp(this.getMonth() + 1)
 			// [Month] Jan through Dec
 			: str === 'M' ? monthShortNames[this.getMonth()]
 			// [Month] 1 through 12
@@ -461,15 +466,15 @@ function toFormatDate(format) {
 			// [Time] 0 through 23
 			: str === 'G' ? this.getHours()
 			// [Time] 01 through 12
-			: str === 'h' ? ('0' + this.getHalfHours()).slice(-2)
+			: str === 'h' ? zp(this.getHalfHours())
 			// [Time] 00 through 23
-			: str === 'H' ? ('0' + this.getHours()).slice(-2)
+			: str === 'H' ? zp(this.getHours())
 			// [Time] 00 to 59
-			: str === 'i' ? ('0' + this.getMinutes()).slice(-2)
+			: str === 'i' ? zp(this.getMinutes())
 			// [Time] 00 through 59
-			: str === 's' ? ('0' + this.getSeconds()).slice(-2)
+			: str === 's' ? zp(this.getSeconds())
 			// [Time] Example: 654321
-			: str === 'u' ? ('00' + this.getMilliseconds()).slice(-3) + '000'
+			: str === 'u' ? zp(this.getMilliseconds(), 3) + '000'
 
 			// [Timezone] Examples: UTC, GMT, Atlantic/Azores
 			: str === 'e' ? timezone['id']
