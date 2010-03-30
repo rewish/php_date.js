@@ -49,7 +49,7 @@ Date.COOKIE = 'l, d-M-y H:i:s T';
  * @constant
  * @return {String}
  */
-Date.ISO8601 = 'Y-m-d\\TH:i:sP';
+Date.ISO8601 = 'Y-m-d\\TH:i:sO';
 /**
  * D, d M y H:i:s O
  * @constant
@@ -491,7 +491,8 @@ function toFormatDate(format) {
 			              + Math.abs(this.getTimezoneOffset() * 60)
 
 			// [Full Date/Time] 2004-02-12T15:19:21+00:00
-			: str === 'c' ? toFormatDate.call(this, Date.ISO8601)
+			// Date.ISO8601
+			: str === 'c' ? toFormatDate.call(this, Date.ATOM)
 			// [Full Date/Time] Example: Thu, 21 Dec 2000 16:01:07 +0200
 			: str === 'r' ? toFormatDate.call(this, Date.RFC2822)
 			// [Full Date/Time] Unix timestamp

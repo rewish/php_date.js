@@ -1,5 +1,5 @@
 <?php
-$time = time();
+$time = strtotime('-1 day');
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -310,11 +310,77 @@ tr.Failed td {
 			<td><?php echo date('U', $time); ?></td>
 			<td></td>
 		</tr>
+		<tr>
+			<td>obj.format(Date.ATOM))</td>
+			<td><script>puts(obj.format(Date.ATOM));</script></td>
+			<td><?php echo date(DATE_ATOM, $time); ?></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>obj.format(Date.COOKIE))</td>
+			<td><script>puts(obj.format(Date.COOKIE));</script></td>
+			<td><?php echo date(DATE_COOKIE, $time); ?></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>obj.format(Date.ISO8601))</td>
+			<td><script>puts(obj.format(Date.ISO8601));</script></td>
+			<td><?php echo date(DATE_ISO8601, $time); ?></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>obj.format(Date.RFC822))</td>
+			<td><script>puts(obj.format(Date.RFC822));</script></td>
+			<td><?php echo date(DATE_RFC822, $time); ?></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>obj.format(Date.RFC850))</td>
+			<td><script>puts(obj.format(Date.RFC850));</script></td>
+			<td><?php echo date(DATE_RFC850, $time); ?></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>obj.format(Date.RFC1036))</td>
+			<td><script>puts(obj.format(Date.RFC1036));</script></td>
+			<td><?php echo date(DATE_RFC1036, $time); ?></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>obj.format(Date.RFC1123))</td>
+			<td><script>puts(obj.format(Date.RFC1123));</script></td>
+			<td><?php echo date(DATE_RFC1123, $time); ?></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>obj.format(Date.RFC2822))</td>
+			<td><script>puts(obj.format(Date.RFC2822));</script></td>
+			<td><?php echo date(DATE_RFC2822, $time); ?></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>obj.format(Date.RFC3339))</td>
+			<td><script>puts(obj.format(Date.RFC3339));</script></td>
+			<td><?php echo date(DATE_RFC3339, $time); ?></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>obj.format(Date.RSS))</td>
+			<td><script>puts(obj.format(Date.RSS));</script></td>
+			<td><?php echo date(DATE_RSS, $time); ?></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td>obj.format(Date.W3C))</td>
+			<td><script>puts(obj.format(Date.W3C));</script></td>
+			<td><?php echo date(DATE_W3C, $time); ?></td>
+			<td></td>
+		</tr>
 	</tbody>
 </table>
 
 <script>
-var result = ['Failed', 'Passed'], td, js, php
+var result = ['Failed', 'Passed'], td, js, php,
     tr = document.getElementsByTagName('tbody').item(0).getElementsByTagName('tr');
 for (var i = 0, length = tr.length; i < length; ++i) {
 	td = tr[i].getElementsByTagName('td');
