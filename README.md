@@ -1,8 +1,9 @@
-http://php.net/date
+[PHP: date - Manual](http://php.net/date)
 
 Introduction
 ============
 
+	<script type="text/javascript" src="php_date.js"></script>
 	<script type="text/javascript">
 		var obj = new Date;
 
