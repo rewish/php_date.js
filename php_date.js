@@ -100,11 +100,6 @@ Date.RSS = 'D, d M Y H:i:s O';
 Date.W3C = 'Y-m-d\\TH:i:sP';
 
 /**
- * Date.parse Original
- * @private
- */
-var parse = Date.parse;
-/**
  * Month keys
  * @private
  */
@@ -151,11 +146,26 @@ var timezone = {
 	'id'   : 'Asia/Tokyo',
 	'abbr' : 'JST'
 };
-
+/**
+ * Date.parse Original
+ * @private
+ */
+var DateParse = Date.parse;
+/**
+ * Date.parse patterns
+ * @private
+ */
 var parsePattern = [
+	// [2009-08-01T01:02:03Z] or [2009-08-01T01:02:03+09:00]
 	/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})([\+|\-]{1}\d{2}:\d{2})?/,
-	/^[a-zA-Z]+, (\d{2,})[\s\-]([a-zA-Z]{3})[\s\-](\d{2}) (\d{2}):(\d{2}):(\d{2})\s*(.+)?/
+	// [Monday, 01-Aug-09 01:02:03 JST] or [Mon, 01 Aug 2009 01:02:03 +0900]
+	/^[a-z]+, (\d{2,})[\s\-]([a-z]{3})[\s\-](\d{2}) (\d{2}):(\d{2}):(\d{2})\s*(.+)?/i
 ];
+/**
+ * is Opera
+ * @private
+ */
+var isOpera = typeof window.opera !== 'undefined';
 
 /**
  * Date.parse及び定数で扱えるフォーマットをパースしてUTCベースのUNIXタイムスタンプを返す
@@ -165,33 +175,29 @@ var parsePattern = [
  * @return {Number} UNIXタイムスタンプ
  */
 Date.parse = function(dateString, baseYear) {
-	var isOpera = typeof window.opera !== 'undefined';
+	var m, time;
 
 	// OperaはDate.parseが変なので取り敢えずNaNにする
-	var time = isOpera ? NaN : parse(dateString);
+	time = isOpera ? NaN : DateParse(dateString);
 
 	if (!isNaN(time)) {
 		return time;
 	}
 
-	var m;
-
 	// [2009-08-01T01:02:03Z] or [2009-08-01T01:02:03+09:00]
 	if (m = dateString.match(parsePattern[0])) {
 		time = Date.UTC(m[1], m[2] - 1, m[3], m[4], m[5], m[6]);
-		console.debug(m[7]);
 		return m[7] ? Date.applyDiffTime(time, m[7]) : time;
 	}
 
 	// [Monday, 01-Aug-09 01:02:03 JST] or [Mon, 01 Aug 2009 01:02:03 +0900]
 	if (m = dateString.match(parsePattern[1])) {
-		var month = monthKeys[m[2]];
-		time = Date.UTC(+m[3] + (baseYear || 2000), month, m[1], m[4], m[5], m[6]);
+		time = Date.UTC(+m[3] + (baseYear || 2000), monthKeys[m[2]], m[1], m[4], m[5], m[6]);
 		return m[7] ? Date.applyDiffTime(time, m[7]) : time;
 	}
 
 	// OperaかつtimeがNaNならDate.parseを通す
-	return isOpera && isNaN(time) ? parse(dateString) : time;
+	return isOpera && isNaN(time) ? DateParse(dateString) : time;
 };
 
 /**

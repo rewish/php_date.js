@@ -31,8 +31,8 @@ body {
 table {
 /*	border-collapse	: collapse;
 	border-spacing	: 1px; */
-	font-size	: inherit;
-	font		: 100%;
+	font-size: inherit;
+	font: 100%;
 }
 
 th, td {
@@ -46,15 +46,15 @@ thead th {
 }
 
 tr.Passed td {
-	color				: #4F8A10;
-	border-color		: #4F8A10;
-	background-color	: #DFF2BF;
+	color: #4F8A10;
+	border-color: #4F8A10;
+	background-color: #DFF2BF;
 }
 
 tr.Failed td {
-	color				: #D8000C;
-	border-color		: #D8000C;
-	background-color	: #FFBABA;
+	color: #D8000C;
+	border-color: #D8000C;
+	background-color: #FFBABA;
 }
 	</style>
 </head>
