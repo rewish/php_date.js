@@ -310,7 +310,7 @@ Date.prototype.getInternetTime = function(hour, min, sec) {
 	min  = min  || +gmt[1];
 	sec  = sec  || +gmt[2];
 	beat = (hour * 3600 + min * 60 + sec + 3600) / 86.4;
-	return ('00' + Math.floor(beat >= 1000 ? beat - 1000 : beat)).slice(-3);
+	return zp(Math.floor(beat >= 1000 ? beat - 1000 : beat), 3);
 };
 
 /**
@@ -320,7 +320,7 @@ Date.prototype.getInternetTime = function(hour, min, sec) {
  * @return {String} "st" or "nd" or "rd" or "th"
  */
 Date.prototype.getSuffix = function(date) {
-	date = (''+(date || this.getDate())).slice(-1);
+	date = ('' + (date || this.getDate())).slice(-1);
 	return date === '1' ? 'st'
 	     : date === '2' ? 'nd'
 	     : date === '3' ? 'rd'
@@ -336,12 +336,8 @@ Date.prototype.getSuffix = function(date) {
  * @return {Number} 経過日数
  */
 Date.prototype.getElapseDays = function(year, month, date) {
-	var start, now;
-	year  = year  || this.getFullYear();
-	month = month || 0;
-	date  = date  || 1;
-	start = new Date(year, month, date);
-	now   = new Date(this.getFullYear(), this.getMonth(), this.getDate());
+	var start = new Date(year || this.getFullYear(), month || 0, date  || 1),
+	    now   = new Date(this.getFullYear(), this.getMonth(), this.getDate());
 	return Math.floor((now - start) / 60 / 60 / 24 / 1000);
 };
 
@@ -396,13 +392,13 @@ Date.prototype.format = function(format, timestamp) {
 	if (!timestamp) {
 		return toFormatDate.call(this, format);
 	}
-	var _time = this.getTime();
 	if (typeof timestamp !== 'number') {
 		timestamp = Date.parse(timestamp);
 	}
+	var _timestamp = this.getTime();
 	this.setTime(timestamp);
 	var formatDate = toFormatDate.call(this, format);
-	this.setTime(_time);
+	this.setTime(_timestamp);
 	return formatDate;
 };
 
