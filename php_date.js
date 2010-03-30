@@ -5,7 +5,7 @@
  * <pre>
  * The MIT License
  *
- * Copyright (c) 2009 rew &lt;rewish.org@gmail.com&gt;
+ * Copyright (c) 2009-2010 rew &lt;rewish.org@gmail.com&gt;
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,10 @@
  * </pre>
  *
  * @name     PHP Date
- * @version  0.2.0
+ * @version  0.3.0
  * @author   rew &lt;<a href="mailto:rewish.org@gmail.com">rewish.org@gmail.com</a>&gt;
  */
+(function() {
 
 /**
  * Y-m-d\\TH:i:sP
@@ -102,7 +103,59 @@ Date.W3C = 'Y-m-d\\TH:i:sP';
  * Date.parse Original
  * @private
  */
-Date.__parse = Date.parse;
+var parse = Date.parse;
+/**
+ * Month keys
+ * @private
+ */
+var monthKeys = {
+	'Jan' : 0, 'Feb' : 1, 'Mar' : 2, 'Apr' : 3, 'May' : 4,  'Jun' : 5,
+	'Jul' : 6, 'Aug' : 7, 'Sep' : 8, 'Oct' : 9, 'Nov' : 10, 'Dec' : 11
+};
+/**
+ * Month full names
+ * @private
+ */
+var monthFullNames = [
+	'January', 'February', 'March', 'April', 'May', 'June',
+	'July', 'August', 'September', 'October', 'November', 'December'
+];
+/**
+ * Month short names
+ * @private
+ */
+var monthShortNames = [
+	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+	'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+];
+/**
+ * Day full names
+ * @private
+ */
+var dayFullNames = [
+	'Sunday', 'Monday', 'Tuesday', 'Wednesday',
+	'Thursday', 'Friday', 'Saturday'
+];
+/**
+ * Day short names
+ * @private
+ */
+var dayShortNames = [
+	'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
+];
+/**
+ * Timezone data
+ * @private
+ */
+var timezone = {
+	'id'   : 'Asia/Tokyo',
+	'abbr' : 'JST'
+};
+
+var parsePattern = [
+	/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})([\+|\-]{1}\d{2}:\d{2})?/,
+	/^[a-zA-Z]+, (\d{2,})[\s\-]([a-zA-Z]{3})[\s\-](\d{2}) (\d{2}):(\d{2}):(\d{2})\s*(.+)?/
+];
 
 /**
  * Date.parse及び定数で扱えるフォーマットをパースしてUTCベースのUNIXタイムスタンプを返す
@@ -112,30 +165,33 @@ Date.__parse = Date.parse;
  * @return {Number} UNIXタイムスタンプ
  */
 Date.parse = function(dateString, baseYear) {
+	var isOpera = typeof window.opera !== 'undefined';
+
 	// OperaはDate.parseが変なので取り敢えずNaNにする
-	var time = window.opera ? NaN : Date.__parse(dateString);
+	var time = isOpera ? NaN : parse(dateString);
+
 	if (!isNaN(time)) {
 		return time;
 	}
 
-	var m, ds = dateString;
+	var m;
 
 	// [2009-08-01T01:02:03Z] or [2009-08-01T01:02:03+09:00]
-	if (m = ds.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})([\+|\-]{1}\d{2}:\d{2})?/)) {
+	if (m = dateString.match(parsePattern[0])) {
 		time = Date.UTC(m[1], m[2] - 1, m[3], m[4], m[5], m[6]);
+		console.debug(m[7]);
 		return m[7] ? Date.applyDiffTime(time, m[7]) : time;
 	}
 
 	// [Monday, 01-Aug-09 01:02:03 JST] or [Mon, 01 Aug 2009 01:02:03 +0900]
-	baseYear = baseYear || 2000;
-	if (m = ds.match(/^[a-zA-Z]+, (\d{2,})[\s|\-]([a-zA-Z]{3})[\s|\-](\d{2}) (\d{2}):(\d{2}):(\d{2})\s*(.+)?/)) {
-		var month = new Date().__monthKeys[m[2]];
-		time = Date.UTC(+m[3] + baseYear, month, m[1], m[4], m[5], m[6]);
+	if (m = dateString.match(parsePattern[1])) {
+		var month = monthKeys[m[2]];
+		time = Date.UTC(+m[3] + (baseYear || 2000), month, m[1], m[4], m[5], m[6]);
 		return m[7] ? Date.applyDiffTime(time, m[7]) : time;
 	}
 
 	// OperaかつtimeがNaNならDate.parseを通す
-	return window.opera && isNaN(time) ? Date.__parse(dateString) : time;
+	return isOpera && isNaN(time) ? parse(dateString) : time;
 };
 
 /**
@@ -153,54 +209,6 @@ Date.applyDiffTime = function(time, diff) {
 };
 
 /**
- * Month keys
- * @private
- */
-Date.prototype.__monthKeys = {
-	'Jan' : 0, 'Feb' : 1, 'Mar' : 2, 'Apr' : 3, 'May' : 4,  'Jun' : 5,
-	'Jul' : 6, 'Aug' : 7, 'Sep' : 8, 'Oct' : 9, 'Nov' : 10, 'Dec' : 11
-};
-/**
- * Month full names
- * @private
- */
-Date.prototype.__monthFullNames = [
-	'January', 'February', 'March', 'April', 'May', 'June',
-	'July', 'August', 'September', 'October', 'November', 'December'
-];
-/**
- * Month short names
- * @private
- */
-Date.prototype.__monthShortNames = [
-	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-	'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
-/**
- * Day full names
- * @private
- */
-Date.prototype.__dayFullNames = [
-	'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-	'Thursday', 'Friday', 'Saturday'
-];
-/**
- * Day short names
- * @private
- */
-Date.prototype.__dayShortNames = [
-	'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
-];
-/**
- * Timezone data
- * @private
- */
-Date.prototype.__timezone = {
-	'id'   : 'Asia/Tokyo',
-	'abbr' : 'JST'
-};
-
-/**
  * ISO-8601 月曜日に始まる年単位の週番号を返す<br>
  * ※1月4日及びその年の最初の木曜日が含まれる週が開始週番号
  *
@@ -210,20 +218,18 @@ Date.prototype.__timezone = {
  * @return {Number} 週番号 (1-53)
  */
 Date.prototype.getISOWeekNumber = function(year, month, date) {
-	var
-		self  = this,
-		year  = year  || self.getFullYear(),
-		month = month || self.getMonth(),
-		date  = date  || self.getDate(),
-		// 今年の1月4日の曜日番号から1日2日3日の合計3日を減算
-		// 上記で算出した週番号開始日を経過日数に加算
-		doy = ((new Date(year, 0, 4).getDay() || 7) - 3)
-		    + self.getElapseDays(year);
+	var _doy, doy;
+	year  = year  || this.getFullYear();
+	month = month || this.getMonth();
+	date  = date  || this.getDate();
+	// 今年の1月4日の曜日番号から1日2日3日の合計3日を減算
+	_doy = (new Date(year, 0, 4).getDay() || 7) - 3;
+	// 上記で算出した週番号開始日を経過日数に加算
+	doy = _doy + this.getElapseDays(year);
 	// 経過日数が0以下の場合、前年から続く週番号
 	if (doy <= 0) {
 		year = year - 1;
-		doy  = ((new Date(year, 0, 4).getDay() || 7) - 3)
-		     + (new Date(year, 11, 31).getElapseDays(year));
+		doy  = _doy + (new Date(year, 11, 31).getElapseDays(year));
 	}
 	// 12月29日より前はここで終了
 	if (month < 11 || date < 29) {
@@ -231,7 +237,7 @@ Date.prototype.getISOWeekNumber = function(year, month, date) {
 		return Math.ceil(doy / 7);
 	}
 	// 12月29日～12月31日の曜日がそれぞれ月、月or火、月～水なら次月の週番号開始
-	if ((self.getDay() || 7) <= (3 - (31 - date))) {
+	if ((this.getDay() || 7) <= (3 - (31 - date))) {
 		return 1;
 	}
 	// 算出された日数を一週間分の7で割って小数点以下切り上げ
@@ -247,12 +253,10 @@ Date.prototype.getISOWeekNumber = function(year, month, date) {
  * @return {Number} 年
  */
 Date.prototype.getISOYear = function(year, month, date) {
-	var
-		self  = this,
-		year  = year  || self.getFullYear(),
-		month = month || self.getMonth(),
-		date  = date  || self.getDate(),
-		wn = self.getISOWeekNumber(year, month, date);
+	year  = year  || this.getFullYear();
+	month = month || this.getMonth();
+	date  = date  || this.getDate();
+	wn = this.getISOWeekNumber(year, month, date);
 	return date <= 3 && wn >= 52 ? year - 1
 	     : date >= 29 && wn == 1 ? year + 1
 	     : year;
@@ -264,8 +268,7 @@ Date.prototype.getISOYear = function(year, month, date) {
  * @return {Number} ミリ秒単位の数値
  */
 Date.prototype.getUTCTime = function() {
-	var self = this;
-	return self.getTime() + (self.getTimezoneOffset() * 60 * 1000);
+	return this.getTime() + (this.getTimezoneOffset() * 60 * 1000);
 };
 
 /**
@@ -275,7 +278,7 @@ Date.prototype.getUTCTime = function() {
  * @return {Boolean} うるう年ならtrue、平年ならfalse
  */
 Date.prototype.isLeapYear = function(year) {
-	var year = year || this.getFullYear();
+	year = year || this.getFullYear();
 	return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 };
 
@@ -288,13 +291,11 @@ Date.prototype.isLeapYear = function(year) {
  * @return {String} インターネットタイム
  */
 Date.prototype.getInternetTime = function(hour, min, sec) {
-	var
-		self = this,
-		gmt  = self.toGMTString().split(' ')[4].split(':'),
-		hour = hour || +gmt[0],
-		min  = min  || +gmt[1],
-		sec  = sec  || +gmt[2],
-		beat = (hour * 3600 + min * 60 + sec + 3600) / 86.4;
+	var beat, gmt = this.toGMTString().split(' ')[4].split(':');
+	hour = hour || +gmt[0];
+	min  = min  || +gmt[1];
+	sec  = sec  || +gmt[2];
+	beat = (hour * 3600 + min * 60 + sec + 3600) / 86.4;
 	return ('00' + Math.floor(beat >= 1000 ? beat - 1000 : beat)).slice(-3);
 };
 
@@ -305,10 +306,10 @@ Date.prototype.getInternetTime = function(hour, min, sec) {
  * @return {String} "st" or "nd" or "rd" or "th"
  */
 Date.prototype.getSuffix = function(date) {
-	var date = date || this.getDate();
-	return date == 1 || date == 21 || date == 31 ? 'st'
-	     : date == 2 || date == 22 ? 'nd'
-	     : date == 3 || date == 23 ? 'rd'
+	date = (''+(date || this.getDate())).slice(-1);
+	return date === '1' ? 'st'
+	     : date === '2' ? 'nd'
+	     : date === '3' ? 'rd'
 	     : 'th';
 };
 
@@ -321,13 +322,12 @@ Date.prototype.getSuffix = function(date) {
  * @return {Number} 経過日数
  */
 Date.prototype.getElapseDays = function(year, month, date) {
-	var
-		self  = this,
-		year  = year  || self.getFullYear(),
-		month = month || 0,
-		date  = date  || 1,
-		start = new Date(year, month, date),
-		now   = new Date(self.getFullYear(), self.getMonth(), self.getDate());
+	var start, now;
+	year  = year  || this.getFullYear();
+	month = month || 0;
+	date  = date  || 1;
+	start = new Date(year, month, date);
+	now   = new Date(this.getFullYear(), this.getMonth(), this.getDate());
 	return Math.floor((now - start) / 60 / 60 / 24 / 1000);
 };
 
@@ -339,10 +339,8 @@ Date.prototype.getElapseDays = function(year, month, date) {
  * @return {Number} 対象月の全日数
  */
 Date.prototype.getMonthTotalDays = function(year, month) {
-	var
-		self  = this,
-		year  = year  || self.getFullYear(),
-		month = month || self.getMonth();
+	year  = year  || this.getFullYear();
+	month = month || this.getMonth();
 	return new Date(year, month + 1, 0).getDate();
 };
 
@@ -353,7 +351,7 @@ Date.prototype.getMonthTotalDays = function(year, month) {
  * @return {Number} 12時間単位の時間
  */
 Date.prototype.getHalfHours = function(hour) {
-	var hour = hour || this.getHours();
+	hour = hour || this.getHours();
 	return hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
 };
 
@@ -384,108 +382,114 @@ Date.prototype.getGMTDiff = function(colon) {
  * @see <a href="http://php.net/manual/ja/function.date.php">PHP: date - Manual</a>
  */
 Date.prototype.format = function(format, timestamp) {
-	var self = this;
-	var getFormatDate = function(format, obj) {
-		var result = [], format = format + '';
-		for (var i = 0, str; str = format.charAt(i); i++) {
-			if (str === '\\') {
-				result[++i] = format.charAt(i);
-				continue;
-			}
-			result[i]
-				// [Day] 01 to 31
-				= str === 'd' ? ('0' + self.getDate()).slice(-2)
-				// [Day] Mon through Sun
-				: str === 'D' ? self.__dayShortNames[self.getDay()]
-				// [Day] 1 to 31
-				: str === 'j' ? self.getDate()
-				// [Day] Monday through Sunday
-				: str === 'l' ? self.__dayFullNames[self.getDay()]
-				// [Day] 1 (for Monday) through 7 (for Sunday)
-				: str === 'N' ? self.getDay() === 0 ? 7 : self.getDay()
-				// [Day] st, nd, rd or th. Works well with j
-				: str === 'S' ? self.getSuffix(self.getDate())
-				// [Day] 0 (for Sunday) through 6 (for Saturday)
-				: str === 'w' ? self.getDay()
-				// [Day] 0 through 365
-				: str === 'z' ? self.getElapseDays()
-
-				// [Week] Example: 42 (the 42nd week in the year)
-				: str === 'W' ? ('0' + self.getISOWeekNumber()).slice(-2)
-
-				// [Month] January through December
-				: str === 'F' ? self.__monthFullNames[self.getMonth()]
-				// [Month] 01 through 12
-				: str === 'm' ? ('0' + (self.getMonth() + 1)).slice(-2)
-				// [Month] Jan through Dec
-				: str === 'M' ? self.__monthShortNames[self.getMonth()]
-				// [Month] 1 through 12
-				: str === 'n' ? self.getMonth() + 1
-				// [Month] 28 through 31
-				: str === 't' ? self.getMonthTotalDays()
-
-				// [Year] 1 if it is a leap year, 0 otherwise.
-				: str === 'L' ? self.isLeapYear() ? 1 : 0
-				// [Year] Examples: 1999 or 2003 (ISO8601)
-				: str === 'o' ? self.getISOYear()
-				// [Year] Examples: 1999 or 2003
-				: str === 'Y' ? self.getFullYear()
-				// [Year] Examples: 99 or 03
-				: str === 'y' ? (self.getFullYear() + '').slice(-2)
-
-				// [Time] am or pm
-				: str === 'a' ? self.getHours() < 12 ? 'am' : 'pm'
-				// [Time] AM or PM
-				: str === 'A' ? self.getHours() < 12 ? 'AM' : 'PM'
-				// [Time] 000 through 999
-				: str === 'B' ? self.getInternetTime()
-				// [Time] 1 through 12
-				: str === 'g' ? self.getHalfHours()
-				// [Time] 0 through 23
-				: str === 'G' ? self.getHours()
-				// [Time] 01 through 12
-				: str === 'h' ? ('0' + self.getHalfHours()).slice(-2)
-				// [Time] 00 through 23
-				: str === 'H' ? ('0' + self.getHours()).slice(-2)
-				// [Time] 00 to 59
-				: str === 'i' ? ('0' + self.getMinutes()).slice(-2)
-				// [Time] 00 through 59
-				: str === 's' ? ('0' + self.getSeconds()).slice(-2)
-				// [Time] Example: 654321
-				: str === 'u' ? ('00' + self.getMilliseconds()).slice(-3) + '000'
-
-				// [Timezone] Examples: UTC, GMT, Atlantic/Azores
-				: str === 'e' ? self.__timezone['id']
-				// [Timezone] 1 if Daylight Saving Time, 0 otherwise.
-				: str === 'I' ? 0
-				// [Timezone] Example: +0900
-				: str === 'O' ? self.getGMTDiff()
-				// [Timezone] Example: +09:00
-				: str === 'P' ? self.getGMTDiff(true)
-				// [Timezone] Examples: EST, MDT ...
-				: str === 'T' ? self.__timezone['abbr']
-				// [Timezone] -43200 through 50400
-				: str === 'Z' ? (self.getTimezoneOffset() > 0 ? '-' : '')
-				              + Math.abs(self.getTimezoneOffset() * 60)
-
-				// [Full Date/Time] 2004-02-12T15:19:21+00:00
-				: str === 'c' ? getFormatDate(Date.ISO8601)
-				// [Full Date/Time] Example: Thu, 21 Dec 2000 16:01:07 +0200
-				: str === 'r' ? getFormatDate(Date.RFC2822)
-				// [Full Date/Time] Unix timestamp
-				: str === 'U' ? (self.getTime() + '').slice(0, -3)
-
-				// [NoMatch]
-				: str;
-		}
-		return result.join('');
-	};
 	if (!timestamp) {
-		return getFormatDate(format);
+		return toFormatDate.call(this, format);
 	}
-	var oldTime = self.getTime();
-	self.setTime(typeof timestamp === 'number' ? timestamp : Date.parse(timestamp));
-	var formatDate = getFormatDate(format);
-	self.setTime(oldTime);
+	var _time = this.getTime();
+	if (typeof timestamp !== 'number') {
+		timestamp = Date.parse(timestamp);
+	}
+	this.setTime(timestamp);
+	var formatDate = toFormatDate.call(this, format);
+	this.setTime(_time);
 	return formatDate;
 };
+
+function toFormatDate(format) {
+	var result = [];
+	format = format + '';
+	for (var i = 0, str; str = format.charAt(i); i++) {
+		if (str === '\\') {
+			result[++i] = format.charAt(i);
+			continue;
+		}
+		result[i]
+			// [Day] 01 to 31
+			= str === 'd' ? ('0' + this.getDate()).slice(-2)
+			// [Day] Mon through Sun
+			: str === 'D' ? dayShortNames[this.getDay()]
+			// [Day] 1 to 31
+			: str === 'j' ? this.getDate()
+			// [Day] Monday through Sunday
+			: str === 'l' ? dayFullNames[this.getDay()]
+			// [Day] 1 (for Monday) through 7 (for Sunday)
+			: str === 'N' ? this.getDay() === 0 ? 7 : this.getDay()
+			// [Day] st, nd, rd or th. Works well with j
+			: str === 'S' ? this.getSuffix(this.getDate())
+			// [Day] 0 (for Sunday) through 6 (for Saturday)
+			: str === 'w' ? this.getDay()
+			// [Day] 0 through 365
+			: str === 'z' ? this.getElapseDays()
+
+			// [Week] Example: 42 (the 42nd week in the year)
+			: str === 'W' ? ('0' + this.getISOWeekNumber()).slice(-2)
+
+			// [Month] January through December
+			: str === 'F' ? monthFullNames[this.getMonth()]
+			// [Month] 01 through 12
+			: str === 'm' ? ('0' + (this.getMonth() + 1)).slice(-2)
+			// [Month] Jan through Dec
+			: str === 'M' ? monthShortNames[this.getMonth()]
+			// [Month] 1 through 12
+			: str === 'n' ? this.getMonth() + 1
+			// [Month] 28 through 31
+			: str === 't' ? this.getMonthTotalDays()
+
+			// [Year] 1 if it is a leap year, 0 otherwise.
+			: str === 'L' ? this.isLeapYear() ? 1 : 0
+			// [Year] Examples: 1999 or 2003 (ISO8601)
+			: str === 'o' ? this.getISOYear()
+			// [Year] Examples: 1999 or 2003
+			: str === 'Y' ? this.getFullYear()
+			// [Year] Examples: 99 or 03
+			: str === 'y' ? (this.getFullYear() + '').slice(-2)
+
+			// [Time] am or pm
+			: str === 'a' ? this.getHours() < 12 ? 'am' : 'pm'
+			// [Time] AM or PM
+			: str === 'A' ? this.getHours() < 12 ? 'AM' : 'PM'
+			// [Time] 000 through 999
+			: str === 'B' ? this.getInternetTime()
+			// [Time] 1 through 12
+			: str === 'g' ? this.getHalfHours()
+			// [Time] 0 through 23
+			: str === 'G' ? this.getHours()
+			// [Time] 01 through 12
+			: str === 'h' ? ('0' + this.getHalfHours()).slice(-2)
+			// [Time] 00 through 23
+			: str === 'H' ? ('0' + this.getHours()).slice(-2)
+			// [Time] 00 to 59
+			: str === 'i' ? ('0' + this.getMinutes()).slice(-2)
+			// [Time] 00 through 59
+			: str === 's' ? ('0' + this.getSeconds()).slice(-2)
+			// [Time] Example: 654321
+			: str === 'u' ? ('00' + this.getMilliseconds()).slice(-3) + '000'
+
+			// [Timezone] Examples: UTC, GMT, Atlantic/Azores
+			: str === 'e' ? timezone['id']
+			// [Timezone] 1 if Daylight Saving Time, 0 otherwise.
+			: str === 'I' ? 0
+			// [Timezone] Example: +0900
+			: str === 'O' ? this.getGMTDiff()
+			// [Timezone] Example: +09:00
+			: str === 'P' ? this.getGMTDiff(true)
+			// [Timezone] Examples: EST, MDT ...
+			: str === 'T' ? timezone['abbr']
+			// [Timezone] -43200 through 50400
+			: str === 'Z' ? (this.getTimezoneOffset() > 0 ? '-' : '')
+			              + Math.abs(this.getTimezoneOffset() * 60)
+
+			// [Full Date/Time] 2004-02-12T15:19:21+00:00
+			: str === 'c' ? toFormatDate.call(this, Date.ISO8601)
+			// [Full Date/Time] Example: Thu, 21 Dec 2000 16:01:07 +0200
+			: str === 'r' ? toFormatDate.call(this, Date.RFC2822)
+			// [Full Date/Time] Unix timestamp
+			: str === 'U' ? (this.getTime() + '').slice(0, -3)
+
+			// [NoMatch]
+			: str;
+	}
+	return result.join('');
+}
+
+})();
