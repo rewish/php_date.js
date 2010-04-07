@@ -170,9 +170,10 @@ var isOpera = typeof window.opera !== 'undefined';
  * zero padding
  * @private
  */
-function zp(v, dig) {
-	dig = dig || 2;
-	return (new Array(dig + 1).join('0') + v).slice(-dig);
+function zp(v, d) {
+	d = d || 2;
+	for (var i = 0; i < d; ++i) v = '0' + v;
+	return v.slice(-d);
 }
 
 /**
