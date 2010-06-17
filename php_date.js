@@ -104,8 +104,8 @@ Date.W3C = 'Y-m-d\\TH:i:sP';
  * @private
  */
 var monthKeys = {
-	'Jan' : 0, 'Feb' : 1, 'Mar' : 2, 'Apr' : 3, 'May' : 4,  'Jun' : 5,
-	'Jul' : 6, 'Aug' : 7, 'Sep' : 8, 'Oct' : 9, 'Nov' : 10, 'Dec' : 11
+	Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4,  Jun: 5,
+	Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
 };
 /**
  * Month full names
@@ -143,8 +143,8 @@ var dayShortNames = [
  * @private
  */
 var timezone = {
-	'id'   : 'Asia/Tokyo',
-	'abbr' : 'JST'
+	id  : 'Asia/Tokyo',
+	abbr: 'JST'
 };
 /**
  * Date.parse Original
@@ -403,8 +403,11 @@ Date.prototype.format = function(format, timestamp) {
 };
 
 function toFormatDate(format) {
-	var result = [];
+	if (this === window) return;
+	// toString
 	format = format + '';
+	// Result
+	var result = [];
 	for (var i = 0, str; str = format.charAt(i); i++) {
 		if (str === '\\') {
 			result[++i] = format.charAt(i);
