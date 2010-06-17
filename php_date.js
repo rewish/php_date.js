@@ -374,8 +374,7 @@ Date.prototype.getHalfHours = function(hour) {
  */
 Date.prototype.getGMTDiff = function(colon) {
 	var offset = this.getTimezoneOffset() / 60;
-	colon = colon ? ':' : '';
-	return [offset > 0 ? '-' : '+', zp(Math.abs(offset)), colon, '00'].join('');
+	return (offset > 0 ? '-' : '+') + zp(Math.abs(offset)) + (colon ? ':' : '') + '00';
 };
 
 /**
