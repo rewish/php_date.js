@@ -170,10 +170,12 @@ var isOpera = typeof window.opera !== 'undefined';
  * zero padding
  * @private
  */
-function zp(v, d) {
-	d = d || 2;
-	for (var i = 0; i < d; ++i) v = '0' + v;
-	return v.slice(-d);
+function zp(value, digit) {
+	digit = digit || 2;
+	for (var i = 0; i < digit; ++i) {
+		value = '0' + value;
+	}
+	return value.slice(-digit);
 }
 
 /**
@@ -271,9 +273,9 @@ Date.prototype.getISOYear = function(year, month, date) {
 	year  = year  || this.getFullYear();
 	month = month || this.getMonth();
 	date  = date  || this.getDate();
-	wn = this.getISOWeekNumber(year, month, date);
-	return date <= 3 && wn >= 52 ? year - 1
-	     : date >= 29 && wn == 1 ? year + 1
+	weekNumber = this.getISOWeekNumber(year, month, date);
+	return date <= 3 && weekNumber >= 52 ? year - 1
+	     : date >= 29 && weekNumber == 1 ? year + 1
 	     : year;
 };
 
@@ -390,25 +392,24 @@ Date.prototype.getGMTDiff = function(colon) {
  */
 Date.prototype.format = function(format, timestamp) {
 	if (!timestamp) {
-		return toFormatDate.call(this, format);
+		return formatter.call(this, format);
 	}
 	if (typeof timestamp !== 'number') {
 		timestamp = Date.parse(timestamp);
 	}
 	var _timestamp = this.getTime();
 	this.setTime(timestamp);
-	var formatDate = toFormatDate.call(this, format);
+	var ret = formatter.call(this, format);
 	this.setTime(_timestamp);
-	return formatDate;
+	return ret;
 };
 
-function toFormatDate(format) {
-	if (this === window) return;
+function fomatter(format) {
 	// toString
 	format = format + '';
 	// Result
 	var result = [];
-	for (var i = 0, str; str = format.charAt(i); i++) {
+	for (var i = 0, str; str = format.charAt(i); ++i) {
 		if (str === '\\') {
 			result[++i] = format.charAt(i);
 			continue;
