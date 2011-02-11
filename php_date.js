@@ -5,7 +5,7 @@
  * <pre>
  * The MIT License
  *
- * Copyright (c) 2009-2010 rew &lt;rewish.org@gmail.com&gt;
+ * Copyright (c) 2009-2011 Hiroshi Hoaki &lt;rewish.org@gmail.com&gt;
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
  * </pre>
  *
  * @name     PHP Date
- * @version  0.3.0
+ * @version  0.3.1
  * @author   rew &lt;<a href="mailto:rewish.org@gmail.com">rewish.org@gmail.com</a>&gt;
  */
 (function() {
@@ -100,14 +100,6 @@ Date.RSS = 'D, d M Y H:i:s O';
 Date.W3C = 'Y-m-d\\TH:i:sP';
 
 /**
- * Month keys
- * @private
- */
-var monthKeys = {
-	Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4,  Jun: 5,
-	Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
-};
-/**
  * Month full names
  * @private
  */
@@ -167,6 +159,21 @@ var parsePattern = [
  */
 var isOpera = typeof window.opera !== 'undefined';
 /**
+ * inArray
+ * @private
+ */
+function inArray(array, value) {
+	if (array.indexOf) {
+		return array.indexOf(value);
+	}
+	for (var i = 0, length = array.length; i < length; ++i) {
+		if (array[i] === value) {
+			return i;
+		}
+	}
+	return -1;
+}
+/**
  * zero padding
  * @private
  */
@@ -203,7 +210,7 @@ Date.parse = function(dateString, baseYear) {
 
 	// [Monday, 01-Aug-09 01:02:03 JST] or [Mon, 01 Aug 2009 01:02:03 +0900]
 	if (m = dateString.match(parsePattern[1])) {
-		time = Date.UTC(+m[3] + (baseYear || 2000), monthKeys[m[2]], m[1], m[4], m[5], m[6]);
+		time = Date.UTC(+m[3] + (baseYear || 2000), inArray(monthShortNames, m[2]), m[1], m[4], m[5], m[6]);
 		return m[7] ? Date.applyDiffTime(time, m[7]) : time;
 	}
 
@@ -323,10 +330,11 @@ Date.prototype.getInternetTime = function(hour, min, sec) {
  * @return {String} "st" or "nd" or "rd" or "th"
  */
 Date.prototype.getSuffix = function(date) {
-	date = ('' + (date || this.getDate())).slice(-1);
-	return date === '1' ? 'st'
-	     : date === '2' ? 'nd'
-	     : date === '3' ? 'rd'
+	date = '' + (date || this.getDate());
+	var last = date.slice(-1);
+	return last === '1' && date !== '11' ? 'st'
+	     : last === '2' && date !== '12' ? 'nd'
+	     : last === '3' && date !== '13' ? 'rd'
 	     : 'th';
 };
 
@@ -392,19 +400,19 @@ Date.prototype.getGMTDiff = function(colon) {
  */
 Date.prototype.format = function(format, timestamp) {
 	if (!timestamp) {
-		return formatter.call(this, format);
+		return _formatter.call(this, format);
 	}
 	if (typeof timestamp !== 'number') {
 		timestamp = Date.parse(timestamp);
 	}
 	var _timestamp = this.getTime();
 	this.setTime(timestamp);
-	var ret = formatter.call(this, format);
+	var ret = _formatter.call(this, format);
 	this.setTime(_timestamp);
 	return ret;
 };
 
-function fomatter(format) {
+function _formatter(format) {
 	// toString
 	format = format + '';
 	// Result
@@ -492,9 +500,9 @@ function fomatter(format) {
 
 			// [Full Date/Time] 2004-02-12T15:19:21+00:00
 			// Date.ISO8601
-			: str === 'c' ? toFormatDate.call(this, Date.ATOM)
+			: str === 'c' ? arguments.callee.call(this, Date.ATOM)
 			// [Full Date/Time] Example: Thu, 21 Dec 2000 16:01:07 +0200
-			: str === 'r' ? toFormatDate.call(this, Date.RFC2822)
+			: str === 'r' ? arguments.callee.call(this, Date.RFC2822)
 			// [Full Date/Time] Unix timestamp
 			: str === 'U' ? (this.getTime() + '').slice(0, -3)
 
